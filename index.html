@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Compare Cover Size — Spa World</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Raleway',Arial,sans-serif;background:#f4f6f8;color:#1a2b3c;font-size:14px}
+
+  .widget{background:#fff;border:1px solid #dde4ea;border-radius:12px;overflow:hidden;max-width:480px;margin:0 auto;box-shadow:0 2px 12px rgba(0,90,139,0.08)}
+
+  .widget-header{background:#005A8B;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:center}
+  .widget-header-left{display:flex;align-items:center;gap:10px}
+  .roundel{width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .roundel svg{width:26px;height:26px}
+  .widget-title{font-size:13px;font-weight:700;letter-spacing:0.03em;line-height:1.2;text-align:center}
+  .widget-subtitle{font-size:10px;color:#5BBBB7;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}
+
+  .canvas-wrap{background:#f8fafc;border-bottom:1px solid #edf1f4;padding:16px;display:flex;justify-content:center;align-items:center}
+  canvas{display:block;border-radius:4px}
+
+  .widget-body{padding:14px 14px 0}
+
+  .compare-label{font-size:11px;font-weight:600;color:#4a6070;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+
+  .field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+  .field label{display:block;font-size:10px;font-weight:600;color:#4a6070;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
+  .field input{width:100%;border:1.5px solid #dde4ea;border-radius:6px;padding:6px 8px;font-family:'Raleway',Arial,sans-serif;font-size:13px;color:#1a2b3c;background:#f8fafc}
+  .field input:focus{outline:none;border-color:#005A8B;background:#fff}
+  .field input[readonly]{background:#eef4f8;color:#4a6070;cursor:default;border-color:#dde4ea}
+  .field-unit{font-size:10px;color:#8aa0b0;margin-top:2px}
+  .field-input-wrap{position:relative;display:flex;align-items:center}
+  .field-input-wrap input{width:100%;padding-right:28px}
+  .field-input-wrap .unit-suffix{position:absolute;right:8px;font-size:11px;color:#8aa0b0;pointer-events:none;font-family:'Raleway',Arial,sans-serif}
+  .field-input-wrap .unit-prefix{position:absolute;left:8px;font-size:11px;color:#8aa0b0;pointer-events:none;font-family:'Raleway',Arial,sans-serif}
+  .field-input-wrap input.has-prefix{padding-left:22px}
+
+
+  .measure-guide{margin-top:10px;margin-bottom:12px;text-align:center}
+  .measure-guide a{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#005A8B;text-decoration:none;padding:7px 14px;border:1.5px solid #b8d9ef;border-radius:6px;background:#eef4f8;transition:background 0.15s}
+  .measure-guide a:hover{background:#ddeef8}
+  .measure-guide-icon{flex-shrink:0}
+
+  .radius-help{margin-top:8px}
+  .radius-help-toggle{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#005A8B;cursor:pointer;background:none;border:none;padding:4px 0;font-family:'Raleway',Arial,sans-serif;line-height:1.2}
+  .radius-help-toggle:hover{color:#00466e}
+  .radius-help-toggle .chev{transition:transform 0.2s ease;flex-shrink:0;margin-left:1px}
+  .radius-help.open .radius-help-toggle .chev{transform:rotate(180deg)}
+  .radius-help-panel{display:none;margin-top:9px;background:#f8fafc;border:1px solid #dde4ea;border-radius:8px;padding:14px 14px 13px}
+  .radius-help.open .radius-help-panel{display:block}
+  .radius-help-panel svg.diagram{display:block;margin:0 auto 11px;width:100%;max-width:240px;height:auto}
+  .radius-help-steps{margin:0;padding-left:18px;font-size:12px;color:#1a2b3c;line-height:1.55}
+  .radius-help-steps li{margin-bottom:5px}
+  .radius-help-steps li:last-child{margin-bottom:0}
+  .radius-help-note{font-size:11px;color:#4a6070;margin-top:9px;padding-top:9px;border-top:1px solid #edf1f4}
+  .radius-help-note strong{color:#1a2b3c}
+
+  .fit-indicator{margin-top:12px;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600;display:flex;align-items:flex-start;gap:8px;line-height:1.4}
+  .fit-indicator .fit-icon{font-size:15px;flex-shrink:0;line-height:1.2}
+  .fit-indicator.fit-yes{background:#d4f5e9;color:#1a7a4a}
+  .fit-indicator.fit-warn{background:#fff4d4;color:#8a6000}
+  .fit-indicator.fit-no{background:#fde8e8;color:#c0392b}
+  .fit-title{font-weight:700;margin-bottom:5px}
+  .fit-issue{font-weight:500;font-size:11px;margin-top:3px;opacity:0.9}
+  .fit-returns{margin-top:6px;font-style:italic;opacity:0.8}
+
+  .widget-footer{font-size:11px;color:#4a6070;text-align:center;padding:10px 14px 12px;border-top:1px solid #edf1f4;margin-top:12px}
+  .widget-footer .disclaimer{display:block;font-weight:600;color:#1a2b3c;margin-bottom:3px}
+  .widget-footer .copyright{display:block;margin-top:4px;font-size:10px;color:#aab8c2;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="widget">
+
+  <div class="widget-header">
+    <div class="widget-header-left">
+      <div>
+        <div class="widget-title">Spa Cover Size Comparison</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="viz" width="420" height="280"></canvas>
+  </div>
+
+  <div class="widget-body">
+
+    <div class="compare-label">This Product</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Length</label>
+        <div class="field-input-wrap">
+          <input type="text" id="p-len" readonly tabindex="-1"/>
+          <span class="unit-suffix">mm</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Width</label>
+        <div class="field-input-wrap">
+          <input type="text" id="p-wid" readonly tabindex="-1"/>
+          <span class="unit-suffix">mm</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Corner Radius</label>
+        <div class="field-input-wrap">
+          <span class="unit-prefix">R</span>
+          <input type="text" id="p-rad" readonly tabindex="-1" class="has-prefix"/>
+          <span class="unit-suffix">mm</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-label" style="margin-top:10px">Your spa measurements</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Length</label>
+        <div class="field-input-wrap">
+          <input type="number" id="c-len" value="2100" min="500" max="6000" step="10" oninput="update()"/>
+          <span class="unit-suffix">mm</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Width</label>
+        <div class="field-input-wrap">
+          <input type="number" id="c-wid" value="2100" min="500" max="6000" step="10" oninput="update()"/>
+          <span class="unit-suffix">mm</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Corner Radius</label>
+        <div class="field-input-wrap">
+          <span class="unit-prefix">R</span>
+          <input type="number" id="c-rad" value="300" min="0" max="800" step="10" class="has-prefix" oninput="update()"/>
+          <span class="unit-suffix">mm</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="radius-help" id="radius-help">
+      <button type="button" class="radius-help-toggle" onclick="toggleRadiusHelp()" aria-expanded="false" aria-controls="radius-help-panel">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="8" r="7.1" stroke="#005A8B" stroke-width="1.5"/>
+          <text x="8" y="11.4" text-anchor="middle" font-size="10" font-weight="700" fill="#005A8B" font-family="Raleway,Arial,sans-serif">?</text>
+        </svg>
+        How do I measure my corner radius?
+        <svg class="chev" width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 4.5L6 8.5L10 4.5" stroke="#005A8B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="radius-help-panel" id="radius-help-panel">
+        <svg class="diagram" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of a spa corner showing the radius measured from the corner point to where the curve begins">
+          <!-- spa body with rounded corner -->
+          <path d="M40,40 L130,40 A50,50 0 0 1 180,90 L180,135 L40,135 Z" fill="#DCEBF7" stroke="#005A8B" stroke-width="2" stroke-linejoin="round"/>
+          <!-- dashed extensions to the theoretical (square) corner -->
+          <g stroke="#8aa0b0" stroke-width="1.5" stroke-dasharray="4 3">
+            <line x1="130" y1="40" x2="180" y2="40"/>
+            <line x1="180" y1="40" x2="180" y2="90"/>
+          </g>
+          <!-- dimension extension lines -->
+          <g stroke="#a7b6c2" stroke-width="1">
+            <line x1="130" y1="40" x2="130" y2="26"/>
+            <line x1="180" y1="40" x2="180" y2="26"/>
+          </g>
+          <!-- radius dimension line + arrowheads -->
+          <line x1="136" y1="30" x2="174" y2="30" stroke="#005A8B" stroke-width="1.5"/>
+          <polygon points="130,30 137,27 137,33" fill="#005A8B"/>
+          <polygon points="180,30 173,27 173,33" fill="#005A8B"/>
+          <text x="155" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#005A8B" font-family="Raleway,Arial,sans-serif">R</text>
+          <!-- key points -->
+          <circle cx="130" cy="40" r="3.2" fill="#5BBBB7"/>
+          <circle cx="180" cy="40" r="3.2" fill="#005A8B"/>
+          <!-- point labels -->
+          <text x="124" y="56" text-anchor="end" font-size="9" fill="#4a6070" font-family="Raleway,Arial,sans-serif">curve begins</text>
+          <text x="185" y="38" text-anchor="start" font-size="9" fill="#4a6070" font-family="Raleway,Arial,sans-serif">corner point</text>
+        </svg>
+
+        <ol class="radius-help-steps">
+          <li>Find the point where a straight edge of your spa starts to curve into the corner.</li>
+          <li>Follow the straight edge to the corner point, where the two straight edges would meet if they kept going.</li>
+          <li>Measure the distance from the corner point back to where the curve begins. That distance is your corner radius.</li>
+        </ol>
+
+        <div class="radius-help-note"><strong style="color:#8a6000">IMPORTANT:</strong> A larger radius is a rounder corner and less likely to fit. A smaller radius fits more easily but may not hug the corners, which can let heat escape. Measure accurately rather than rounding up or down. A square corner is R0.</div>
+      </div>
+    </div>
+
+    <div id="fit-indicator"></div>
+
+    <div class="measure-guide">
+      <a href="https://www.youtube.com/watch?v=K5G7ZZayGq8" target="_parent">
+        <svg class="measure-guide-icon" width="18" height="13" viewBox="0 0 18 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="18" height="13" rx="3" fill="#FF0000"/>
+          <path d="M7 3.5L12.5 6.5L7 9.5V3.5Z" fill="white"/>
+        </svg>
+        Need help measuring? Watch our guide
+      </a>
+    </div>
+
+  </div>
+
+  <div class="widget-footer">
+    <span class="disclaimer">Dimensions indicative only. Always measure your spa before ordering.</span>
+    <span class="disclaimer">Please be reminded we have a no returns policy after dispatch. <a href="https://shop.spaworld.com.au/returns_policy" target="_parent" style="color:#005A8B;font-weight:700">View returns policy →</a></span>
+    <span class="copyright">&copy; Spa World.</span>
+  </div>
+
+</div>
+
+<script>
+const COL_PRODUCT  = {fill:'#B8D9EF', stroke:'#005A8B', text:'#003d61'};
+const COL_CUSTOMER = {fill:'#B8EFC8', stroke:'#1a7a4a', text:'#145c37'};
+
+const params = new URLSearchParams(location.search);
+
+const product = {
+  l: clamp(+(params.get('l') || params.get('length') || 2350), 500, 6000),
+  w: clamp(+(params.get('w') || params.get('width')  || 2350), 500, 6000),
+  r: clamp(+(params.get('r') || params.get('radius') || 350),  0,   800),
+  name: params.get('name') || 'This product',
+};
+
+document.getElementById('p-len').value = product.l;
+document.getElementById('p-wid').value = product.w;
+document.getElementById('p-rad').value = product.r;
+
+function clamp(v, mn, mx){ return Math.min(mx, Math.max(mn, v || mn)); }
+
+function getCustomer(){
+  return {
+    l: clamp(+(document.getElementById('c-len').value), 500, 6000),
+    w: clamp(+(document.getElementById('c-wid').value), 500, 6000),
+    r: clamp(+(document.getElementById('c-rad').value), 0, 800),
+    name: 'Your spa',
+  };
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  r = Math.max(0, Math.min(r, w/2-1, h/2-1));
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+function draw(){
+  const canvas = document.getElementById('viz');
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const customer = getCustomer();
+  const covers = [
+    {c: product,  col: COL_PRODUCT},
+    {c: customer, col: COL_CUSTOMER},
+  ];
+
+  const maxL = Math.max(product.l, customer.l);
+  const maxW = Math.max(product.w, customer.w);
+
+  // Generous padding to keep all labels inside the canvas
+  // Top/bottom padding accounts for two staggered dimension labels (2 * 16px) + margin
+  // Left padding accounts for two rotated labels on the left side
+  const padTop    = 52;  // length block above
+  const padBottom = 46;  // radius block below
+  const padLeft   = 115; // width block to the left
+  const padRight  = 115; // mirror padLeft so shapes sit centred
+
+  const drawW = W - padLeft - padRight;
+  const drawH = H - padTop  - padBottom;
+
+  const scale = Math.min(drawW / maxL, drawH / maxW);
+  const cx = padLeft + drawW / 2;
+  const cy = padTop  + drawH / 2;
+
+  // Draw shapes largest first so smaller sits on top
+  const sorted = [...covers].sort((a,b) => (b.c.l*b.c.w) - (a.c.l*a.c.w));
+  sorted.forEach(({c, col}) => {
+    const pw = c.l*scale, ph = c.w*scale;
+    const px = cx - pw/2, py = cy - ph/2;
+    const pr = Math.min(c.r*scale, pw/2-1, ph/2-1);
+    const isCustomer = c === customer;
+    ctx.beginPath();
+    roundRect(ctx, px, py, pw, ph, pr);
+    ctx.fillStyle = col.fill;
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = col.stroke;
+    ctx.lineWidth = 2.5;
+    if(isCustomer){
+      ctx.setLineDash([6, 4]);
+    } else {
+      ctx.setLineDash([]);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]); // reset
+  });
+
+  // ── Layout constants ────────────────────────────────────────────────────
+  // Labels are drawn outside the shapes in grouped blocks:
+  //   TOP  — Length block (header + 2 value lines)
+  //   LEFT — Width block (header + 2 value lines), horizontal, left of shapes
+  //   BOTTOM-RIGHT — Radius block inside canvas corner
+  //
+  // Fonts
+  const F_HEAD = 'bold 10px Raleway,Arial,sans-serif';
+  const F_VAL  = '11px Raleway,Arial,sans-serif';
+  const LH = 13; // line height px
+
+  // Outer edges of the LARGEST shape — label blocks anchor here
+  const bigScaledL = Math.max(...covers.map(({c}) => c.l)) * scale;
+  const bigScaledW = Math.max(...covers.map(({c}) => c.w)) * scale;
+  const outerTop   = cy - bigScaledW / 2;
+  const outerLeft  = cx - bigScaledL / 2;
+  const outerRight = cx + bigScaledL / 2;
+  const outerBot   = cy + bigScaledW / 2;
+
+  // ── LENGTH block — centred above shapes ─────────────────────────────────
+  // 3 lines: "Length", "This Product: Xmm", "Your Spa: Xmm"
+  // Block bottom sits 6px above outerTop
+  const lenBlockBottom = outerTop - 6;
+  const lenLines = [
+    {text: 'Length',                                       font: F_HEAD, color: '#4a6070'},
+    {text: `This Product: ${product.l}mm`,                 font: F_VAL,  color: COL_PRODUCT.text},
+    {text: `Your Spa: ${customer.l}mm`,                    font: F_VAL,  color: COL_CUSTOMER.text},
+  ];
+  // Draw bottom-up
+  lenLines.slice().reverse().forEach((line, ri) => {
+    const y = lenBlockBottom - ri * LH;
+    ctx.font = line.font;
+    ctx.fillStyle = line.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(line.text, cx, y);
+  });
+
+  // ── WIDTH block — horizontal, to the left of shapes ─────────────────────
+  // 3 lines: "Width", "This Product: Xmm", "Your Spa: Xmm"
+  // Block is centre-aligned; find the widest line to anchor the centre x
+  const widLines = [
+    {text: 'Width',                                        font: F_HEAD, color: '#4a6070'},
+    {text: `This Product: ${product.w}mm`,                 font: F_VAL,  color: COL_PRODUCT.text},
+    {text: `Your Spa: ${customer.w}mm`,                    font: F_VAL,  color: COL_CUSTOMER.text},
+  ];
+  // Measure widest line to set block right edge, then derive centre
+  ctx.font = F_VAL;
+  const widBlockWidth = Math.max(...widLines.map(l => { ctx.font = l.font; return ctx.measureText(l.text).width; }));
+  const widBlockRight = outerLeft - 8;
+  const widBlockCx    = widBlockRight - widBlockWidth / 2;
+  widLines.forEach((line, i) => {
+    const y = cy - ((widLines.length - 1) / 2 - i) * LH;
+    ctx.font = line.font;
+    ctx.fillStyle = line.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(line.text, widBlockCx, y);
+  });
+
+  // ── RADIUS block — bottom-right corner of canvas ─────────────────────────
+  const radLines = [
+    {text: 'Corner Radius',                                font: F_HEAD, color: '#4a6070'},
+    {text: `This Product: R${product.r}mm`,               font: F_VAL,  color: COL_PRODUCT.text},
+    {text: `Your Spa: R${customer.r}mm`,                  font: F_VAL,  color: COL_CUSTOMER.text},
+  ];
+  // Measure widest line, anchor block right edge to canvas right, derive centre
+  const radBlockWidth = Math.max(...radLines.map(l => { ctx.font = l.font; return ctx.measureText(l.text).width; }));
+  const radBlockRight = W - 8;
+  const radBlockCx    = radBlockRight - radBlockWidth / 2;
+  const radY = H - 8 - (radLines.length - 1) * LH;
+  radLines.forEach((line, i) => {
+    ctx.font = line.font;
+    ctx.fillStyle = line.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(line.text, radBlockCx, radY + i * LH);
+  });
+}
+
+function drawFit(){
+  const customer = getCustomer();
+  const diffL = customer.l - product.l; // positive = spa larger than cover
+  const diffW = customer.w - product.w;
+  const diffR = customer.r - product.r;
+
+  // From the cover's perspective: negative diff means cover is LARGER than spa
+  const overL = -(diffL); // how much cover exceeds spa on length
+  const overW = -(diffW);
+  const overR = -(diffR);
+
+  const FIT   = 20;  // within this = green
+  const AMBER = 40;  // cover larger by 21-40mm = amber
+  // beyond AMBER on any dimension = red
+
+  const el = document.getElementById('fit-indicator');
+
+  // Check each dimension
+  const absL = Math.abs(diffL);
+  const absW = Math.abs(diffW);
+  const absR = Math.abs(diffR);
+
+  const allFit = absL <= FIT && absW <= FIT && absR <= FIT;
+
+  // Amber: cover is larger than spa by 21-40mm on one or more dimensions,
+  // and NO dimension exceeds 40mm over
+  const coverTooLargeL = overL > FIT;
+  const coverTooLargeW = overW > FIT;
+  const coverTooLargeR = overR > FIT;
+  const anyAmber = (coverTooLargeL && overL <= AMBER) ||
+                   (coverTooLargeW && overW <= AMBER) ||
+                   (coverTooLargeR && overR <= AMBER);
+  const anyRed   = overL > AMBER || overW > AMBER || overR > AMBER ||
+                   diffL > FIT   || diffW > FIT   || diffR > FIT; // spa larger than cover also red
+
+  if(allFit){
+    el.className = 'fit-indicator fit-yes';
+    el.innerHTML = `<span class="fit-icon">✓</span><div>This cover suits your spa.</div>`;
+    return;
+  }
+
+  if(!anyRed && anyAmber){
+    // Build issue lines for amber
+    const lines = [];
+    if(coverTooLargeL) lines.push(`<div class="fit-issue">⚠ Length is ${overL}mm larger than your spa.</div>`);
+    if(coverTooLargeW) lines.push(`<div class="fit-issue">⚠ Width is ${overW}mm larger than your spa.</div>`);
+    if(coverTooLargeR) lines.push(`<div class="fit-issue">⚠ Corner radius does not match your spa.</div>`);
+    el.className = 'fit-indicator fit-warn';
+    el.innerHTML = `<div>
+      <div class="fit-title">⚠ This cover is close, but outside our recommended fit range.</div>
+      ${lines.join('')}
+      <div class="fit-issue fit-returns">Please be reminded we have a no returns policy after dispatch.</div>
+    </div>`;
+    return;
+  }
+
+  // Red — build issue list for all out-of-range dimensions
+  const lines = [];
+  if(absL > FIT){
+    const dir = overL > 0 ? `${overL}mm larger than` : `${absL}mm smaller than`;
+    lines.push(`<div class="fit-issue">⚠ Length is ${dir} your spa.</div>`);
+  }
+  if(absW > FIT){
+    const dir = overW > 0 ? `${overW}mm larger than` : `${absW}mm smaller than`;
+    lines.push(`<div class="fit-issue">⚠ Width is ${dir} your spa.</div>`);
+  }
+  if(absR > FIT){
+    const dir = overR > 0 ? `larger than` : `smaller than`;
+    lines.push(`<div class="fit-issue">⚠ Corner radius does not match your spa.</div>`);
+  }
+  el.className = 'fit-indicator fit-no';
+  el.innerHTML = `<div>
+    <div class="fit-title">✕ This cover is not suitable for your spa.</div>
+    ${lines.join('')}
+    <div class="fit-issue">⚠ All dimensions should be within 20mm of your spa's measurements.</div>
+  </div>`;
+}
+
+function toggleRadiusHelp(){
+  const wrap = document.getElementById('radius-help');
+  const open = wrap.classList.toggle('open');
+  wrap.querySelector('.radius-help-toggle').setAttribute('aria-expanded', open);
+}
+
+function update(){
+  draw();
+  drawFit();
+}
+
+update();
+</script>
+</body>
+</html>

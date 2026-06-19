@@ -506,10 +506,16 @@ function drawFit(){
   </div>`;
 }
 
+function sendHeight(){
+  const h = document.documentElement.scrollHeight;
+  window.parent.postMessage({ type: 'swComparatorHeight', height: h }, '*');
+}
+
 function toggleRadiusHelp(){
   const wrap = document.getElementById('radius-help');
   const open = wrap.classList.toggle('open');
   wrap.querySelector('.radius-help-toggle').setAttribute('aria-expanded', open);
+  setTimeout(sendHeight, 250);
 }
 
 function update(){
@@ -518,6 +524,11 @@ function update(){
 }
 
 update();
+
+window.addEventListener('load', sendHeight);
+if(window.ResizeObserver){
+  new ResizeObserver(sendHeight).observe(document.body);
+}
 </script>
 </body>
 </html>
